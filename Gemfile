@@ -1,12 +1,23 @@
 source 'https://rubygems.org'
 
-spree_branch = '3-1-stable'
+spree_opts = '>= 4.4.0'
 
-gem 'spree', github: 'spree/spree', branch: spree_branch
-# Provides basic authentication functionality for testing parts of your engine
-gem 'spree_auth_devise', github: 'spree/spree_auth_devise', branch: spree_branch
+gem 'spree', spree_opts
+gem 'spree_backend', spree_opts
 
-gem 'spree_multi_currency', github: 'spree-contrib/spree_multi_currency',
-                            branch: spree_branch
+
+group :test do
+  gem 'rails-controller-testing'
+end
+
+group :development do
+  gem 'htmlbeautifier'
+  gem 'rcodetools', require: false
+  gem 'reek', require: false
+  gem 'rubocop', require: false
+  gem 'rubocop-rails', require: false
+  gem 'rubocop-rspec', require: false
+  gem 'solargraph', require: false
+end
 
 gemspec
