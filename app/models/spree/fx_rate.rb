@@ -44,18 +44,26 @@ module Spree
     end
 
     def self.fetch_fixer
-      request = FixerClient.new(spree_currency, pluck(:to_currency))
-      request.fetch.each do |currency, value|
-        find_by(to_currency: currency).try(:update_attributes, rate: value)
+      request = FixerClient.new(spree_currency, all.pluck(:to_currency))
+      request.fetch.each do |result|
+        currency = result[:to]
+        value = result[:val]
+        m = find_by(to_currency: currency)
+        m.try(:update, rate: value)
       end
       true
     end
 
     def fetch_fixer
       request = FixerClient.new(from_currency, [to_currency])
-      new_rate = request.fetch
-      return false unless new_rate
-      update_attributes(rate: new_rate)
+      result = request.fetch
+      return false unless result
+
+      result = result.first
+
+      new_rate = result[:val]
+
+      update(rate: new_rate)
     end
 
     # @todo: implement force option for only applying
