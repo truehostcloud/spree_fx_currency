@@ -41,7 +41,7 @@ module Spree
       @@store = store
 
       sync_currencies_from_store
-      # fetch_fixer if Rails.env.production?
+      fetch_fixer
     end
 
     def self.fetch_fixer
