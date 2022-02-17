@@ -1,3 +1,3 @@
-require 'spree/app_configuration_decorator'
+# require 'spree/app_configuration_decorator'
 
-Spree::FxRate.create_supported_currencies
+# Spree::FxRate.create_supported_currencies
