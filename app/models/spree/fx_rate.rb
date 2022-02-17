@@ -28,6 +28,7 @@ module Spree
       found_currencies = supported_currencies.map do |c|
         find_or_create_by(from_currency: spree_currency, to_currency: c.upcase).id
       end
+      # Comment Out To Not Delete Other Currencies
       where.not(id: found_currencies).destroy_all
     end
 
