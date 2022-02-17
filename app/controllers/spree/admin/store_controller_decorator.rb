@@ -6,8 +6,7 @@ module Spree
       end
 
       def create_fx_rates_for_currencies
-        # Spree::FxRate.create_supported_currencies((current_store)) if Spree::FxRate.none? || @store.supported_currencies_previously_changed?
-        Spree::FxRate.create_supported_currencies(current_store)
+        Spree::FxRate.create_supported_currencies(current_store) if Spree::FxRate.none? || @store.supported_currencies_previously_changed?
       end
     end
   end
