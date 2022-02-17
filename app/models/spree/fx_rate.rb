@@ -11,27 +11,35 @@ module Spree
 
     after_save :update_products_prices
 
+    @store = nil
+
     def self.spree_currency
-      Spree::Config.currency
+      @@store.default_currency
     end
 
     def self.supported_currencies
-      Spree::Config.supported_currencies.split(', ')
-                   .reject { |c| spree_currency.to_s == c.upcase }
+      @@store.supported_currencies.split(',')
+             .reject { |c| spree_currency.to_s == c.upcase }
     rescue NoMethodError => _e
       []
     end
 
-    def self.sync_currencies_from_config
+    def self.sync_currencies_from_store
       found_currencies = supported_currencies.map do |c|
         find_or_create_by(from_currency: spree_currency, to_currency: c.upcase).id
       end
       where.not(id: found_currencies).destroy_all
     end
 
-    def self.create_supported_currencies
+    # Called when Store is updated
+    def self.create_supported_currencies(store = nil)
       return unless table_exists?
-      sync_currencies_from_config
+
+      store ||= Spree::Store.default
+
+      @@store = store
+
+      sync_currencies_from_store
       # fetch_fixer if Rails.env.production?
     end
 
@@ -52,9 +60,12 @@ module Spree
 
     # @todo: implement force option for only applying
     #        fx rate changes to blank prices
-    def update_products_prices
+    def update_products_prices(store = nil)
+      store ||= Spree::Store.default
+      @@store ||= store
+
       Spree::Product.transaction do
-        Spree::Product.all.each { |p| update_prices_for_product(p) }
+        @@store.products.all.find_each { |p| update_prices_for_product(p) }
       end
     end
 
