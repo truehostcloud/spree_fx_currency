@@ -45,12 +45,14 @@ module Spree
     end
 
     def self.fetch_fixer
-      request = FixerClient.new(spree_currency, all.pluck(:to_currency))
-      request.fetch.each do |result|
-        currency = result[:to]
-        value = result[:val]
-        m = find_by(to_currency: currency)
-        m.try(:update, rate: value)
+      all.pluck(:to_currency).each do |to_currency|
+        request = FixerClient.new(spree_currency, [to_currency])
+        request.fetch.each do |result|
+          currency = result[:to]
+          value = result[:val]
+          m = find_by(to_currency: currency)
+          m.try(:update, rate: value)
+        end
       end
       true
     end
