@@ -7,7 +7,7 @@ class FixerClient
     raise ArgumentError, 'Symbols are blank' if symbols_formatted.blank?
     raise ArgumentError, 'Base currency is blank' if base.blank?
 
-    fx_conv_api_key = ENV['CURRENCY_CONVERTER_API']
+    fx_conv_api_key = ENV['CURRENCY_CONVERTER_API_KEY']
 
     @uri = URI(
       "https://free.currconv.com/api/v7/convert?apiKey=#{fx_conv_api_key}&q=#{symbols_formatted}"
