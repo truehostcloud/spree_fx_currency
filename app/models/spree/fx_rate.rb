@@ -11,50 +11,73 @@ module Spree
 
     after_save :update_products_prices
 
+    @store = nil
+
     def self.spree_currency
-      Spree::Config.currency
+      @@store.default_currency
     end
 
     def self.supported_currencies
-      Spree::Config.supported_currencies.split(', ')
-                   .reject { |c| spree_currency.to_s == c.upcase }
+      @@store.supported_currencies.split(',')
+             .reject { |c| spree_currency.to_s == c.upcase }
     rescue NoMethodError => _e
       []
     end
 
-    def self.sync_currencies_from_config
-      found_currencies = supported_currencies.map do |c|
+    def self.sync_currencies_from_store
+      supported_currencies.map do |c|
         find_or_create_by(from_currency: spree_currency, to_currency: c.upcase).id
       end
-      where.not(id: found_currencies).destroy_all
+      # Comment Out To Not Delete Other Currencies
+      # where.not(id: found_currencies).destroy_all
     end
 
-    def self.create_supported_currencies
+    # Called when Store is updated
+    def self.create_supported_currencies(store = nil)
       return unless table_exists?
-      sync_currencies_from_config
-      # fetch_fixer if Rails.env.production?
+
+      store ||= Spree::Store.default
+
+      @@store = store
+
+      sync_currencies_from_store
+      fetch_fixer
     end
 
     def self.fetch_fixer
-      request = FixerClient.new(spree_currency, pluck(:to_currency))
-      request.fetch.each do |currency, value|
-        find_by(to_currency: currency).try(:update_attributes, rate: value)
+      all.pluck(:to_currency).each do |to_currency|
+        request = FixerClient.new(spree_currency, [to_currency])
+        conversion_rate_results = request.fetch
+        conversion_rate_results.each do |result|
+          currency = result[:to]
+          value = result[:val]
+          m = find_by(to_currency: currency)
+          m.try(:update, rate: value)
+        end
       end
       true
     end
 
     def fetch_fixer
       request = FixerClient.new(from_currency, [to_currency])
-      new_rate = request.fetch
-      return false unless new_rate
-      update_attributes(rate: new_rate)
+      result = request.fetch
+      return false unless result
+
+      result = result.first
+
+      new_rate = result[:val]
+
+      update(rate: new_rate)
     end
 
     # @todo: implement force option for only applying
     #        fx rate changes to blank prices
-    def update_products_prices
+    def update_products_prices(store = nil)
+      store ||= Spree::Store.default
+      @@store ||= store
+
       Spree::Product.transaction do
-        Spree::Product.all.each { |p| update_prices_for_product(p) }
+        @@store.products.all.find_each { |p| update_prices_for_product(p) }
       end
     end
 
