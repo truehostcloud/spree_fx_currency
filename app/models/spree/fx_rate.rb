@@ -47,7 +47,8 @@ module Spree
     def self.fetch_fixer
       all.pluck(:to_currency).each do |to_currency|
         request = FixerClient.new(spree_currency, [to_currency])
-        request.fetch.each do |result|
+        conversion_rate_results = request.fetch
+        conversion_rate_results.each do |result|
           currency = result[:to]
           value = result[:val]
           m = find_by(to_currency: currency)
