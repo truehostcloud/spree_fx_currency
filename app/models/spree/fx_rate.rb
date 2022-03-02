@@ -49,10 +49,11 @@ module Spree
         request = FixerClient.new(spree_currency, [to_currency])
         conversion_rate_results = request.fetch
         conversion_rate_results.each do |result|
-          currency = result[:to]
+          from = result[:from]
+          to = result[:to]
           value = result[:val]
-          m = find_by(to_currency: currency)
-          m.try(:update, rate: value)
+          conversion_rate = find_by(from_currency: from, to_currency: to)
+          conversion_rate.try(:update, rate: value)
         end
       end
       true
