@@ -16,7 +16,7 @@ class FixerClient
     @from_currency, @to_currency = symbols_query.split("_")
 
     @url = URI(
-      "https://free.currconv.com/api/v7/convert?apiKey=#{fx_conv_api_key}&q=#{symbols_query}"
+      "https://free.currconv.com/api/v7/convert??compact=ultra&apiKey=#{fx_conv_api_key}&q=#{symbols_query}"
     )
     @url_exchange_rate = URI(
       "https://v6.exchangerate-api.com/v6/#{exchange_rate_api_key}/pair/#{from_currency}/#{to_currency}"
