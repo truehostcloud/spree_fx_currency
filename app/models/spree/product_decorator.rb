@@ -11,7 +11,7 @@ module Spree
                                     .reject { |c| default_currency.to_s == c.upcase }
         supported_currencies.map do |c|
           fx = Spree::FxRate.where(from_currency: default_currency, to_currency: c.upcase).first
-          fx.update_prices_for_product(self)
+          fx.update_prices_for_product(self) unless fx.nil?
         end
       end
     end
