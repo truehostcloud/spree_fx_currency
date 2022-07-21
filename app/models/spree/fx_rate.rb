@@ -45,9 +45,11 @@ module Spree
     end
 
     def self.fetch_fixer
-      all.pluck(:to_currency).each do |to_currency|
+      supported_currencies.map do |c|
+        to_currency = c.upcase
         request = FixerClient.new(spree_currency, [to_currency])
         conversion_rate_results = request.fetch
+        return false unless conversion_rate_results
         conversion_rate_results.each do |result|
           from = result[:from]
           to = result[:to]
